@@ -5,6 +5,7 @@ module Ptilinopus
   class API
     include HTTParty
     API_PATH = '/api/v1/'
+    DEFAULT_HEADER = { 'Content-Type' => 'application/json' }
 
     attr_accessor :api_key
 
@@ -15,24 +16,14 @@ module Ptilinopus
       @api_key = api_key || self.class.api_key
     end
 
-    def call(type, method, params = {}, headers = {})
+    def call(type, method, params = {})
       ensure_api_key(params)
-      headers = { 'Content-Type' => 'application/x-www-form-urlencoded' } unless headers.present?
 
       params = params.merge(apiKey: @api_key)
-      self.class.send(type, API_PATH + method, body: params, headers: headers, query_string_normalizer: query_string_normalizer)
+      self.class.send(type, API_PATH + method, body: params.to_json, headers: DEFAULT_HEADER)
     end
 
     private
-
-    # FIXME Some methods of Mailerlite doesn't accept encoded emails
-    def query_string_normalizer
-      proc { |query|
-        query.map do |key, value|
-          "#{key}=#{value}"
-        end.join('&')
-      }
-    end
 
     def ensure_api_key(params)
       unless @api_key || params[:apiKey]
