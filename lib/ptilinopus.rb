@@ -4,7 +4,6 @@ require 'ptilinopus/version'
 module Ptilinopus
   class API
     include HTTParty
-    DEFAULT_HEADER = { 'Content-Type' => 'application/x-www-form-urlencoded' }
     API_PATH = '/api/v1/'
 
     attr_accessor :api_key
@@ -16,13 +15,12 @@ module Ptilinopus
       @api_key = api_key || self.class.api_key
     end
 
-    def call(type, method, params = {})
+    def call(type, method, params = {}, headers = {})
       ensure_api_key(params)
+      headers = { 'Content-Type' => 'application/x-www-form-urlencoded' } unless headers.present?
 
       params = params.merge(apiKey: @api_key)
-      response = self.class.send(type, API_PATH + method, body: params, headers: DEFAULT_HEADER, query_string_normalizer: query_string_normalizer)
-
-      return response
+      self.class.send(type, API_PATH + method, body: params, headers: headers, query_string_normalizer: query_string_normalizer)
     end
 
     private
